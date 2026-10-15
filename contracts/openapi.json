@@ -1,0 +1,884 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Economy Swing API",
+    "description": "Read-only synthetic research demo. No live data or investment recommendations.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health/live": {
+      "get": {
+        "summary": "Live",
+        "operationId": "live_health_live_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "summary": "Ready",
+        "operationId": "ready_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard": {
+      "get": {
+        "summary": "Dashboard",
+        "operationId": "dashboard_api_v1_dashboard_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dashboard"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/macro/indicators": {
+      "get": {
+        "summary": "Indicators",
+        "operationId": "indicators_api_v1_macro_indicators_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Indicator"
+                  },
+                  "type": "array",
+                  "title": "Response Indicators Api V1 Macro Indicators Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sectors": {
+      "get": {
+        "summary": "Sectors",
+        "operationId": "sectors_api_v1_sectors_get",
+        "parameters": [
+          {
+            "name": "market",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ALL",
+                "US",
+                "KR"
+              ],
+              "type": "string",
+              "default": "ALL",
+              "title": "Market"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Sector"
+                  },
+                  "title": "Response Sectors Api V1 Sectors Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sectors/{sector_id}": {
+      "get": {
+        "summary": "Sector",
+        "operationId": "sector_api_v1_sectors__sector_id__get",
+        "parameters": [
+          {
+            "name": "sector_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sector Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sector"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/relationships": {
+      "get": {
+        "summary": "Relationships",
+        "operationId": "relationships_api_v1_relationships_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Relationship"
+                  },
+                  "type": "array",
+                  "title": "Response Relationships Api V1 Relationships Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/relationships/{sector_id}": {
+      "get": {
+        "summary": "Study",
+        "operationId": "study_api_v1_relationships__sector_id__get",
+        "parameters": [
+          {
+            "name": "sector_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Sector Id"
+            }
+          },
+          {
+            "name": "horizon",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Horizon",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Relationship"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/learn/terms": {
+      "get": {
+        "summary": "Terms",
+        "operationId": "terms_api_v1_learn_terms_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Term"
+                  },
+                  "type": "array",
+                  "title": "Response Terms Api V1 Learn Terms Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiError": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "request_id"
+        ],
+        "title": "ApiError"
+      },
+      "Dashboard": {
+        "properties": {
+          "data_mode": {
+            "type": "string",
+            "const": "demo",
+            "title": "Data Mode",
+            "default": "demo"
+          },
+          "as_of": {
+            "type": "string",
+            "title": "As Of"
+          },
+          "generated_at": {
+            "type": "string",
+            "title": "Generated At"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "weights": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Weights"
+          },
+          "calendar_note": {
+            "type": "string",
+            "title": "Calendar Note"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          },
+          "indicators": {
+            "items": {
+              "$ref": "#/components/schemas/Indicator"
+            },
+            "type": "array",
+            "title": "Indicators"
+          },
+          "sectors": {
+            "items": {
+              "$ref": "#/components/schemas/Sector"
+            },
+            "type": "array",
+            "title": "Sectors"
+          },
+          "relationships": {
+            "items": {
+              "$ref": "#/components/schemas/Relationship"
+            },
+            "type": "array",
+            "title": "Relationships"
+          },
+          "terms": {
+            "items": {
+              "$ref": "#/components/schemas/Term"
+            },
+            "type": "array",
+            "title": "Terms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "as_of",
+          "generated_at",
+          "source",
+          "model_version",
+          "weights",
+          "calendar_note",
+          "limitations",
+          "indicators",
+          "sectors",
+          "relationships",
+          "terms"
+        ],
+        "title": "Dashboard"
+      },
+      "Event": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "title": "Date"
+          },
+          "entry_date": {
+            "type": "string",
+            "title": "Entry Date"
+          },
+          "exit_date": {
+            "type": "string",
+            "title": "Exit Date"
+          },
+          "return_pct": {
+            "type": "number",
+            "title": "Return Pct"
+          },
+          "benchmark_return_pct": {
+            "type": "number",
+            "title": "Benchmark Return Pct"
+          },
+          "excess_return_pp": {
+            "type": "number",
+            "title": "Excess Return Pp"
+          },
+          "max_drawdown_pct": {
+            "type": "number",
+            "title": "Max Drawdown Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "entry_date",
+          "exit_date",
+          "return_pct",
+          "benchmark_return_pct",
+          "excess_return_pp",
+          "max_drawdown_pct"
+        ],
+        "title": "Event"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Horizon": {
+        "type": "integer",
+        "enum": [
+          5,
+          20,
+          60
+        ],
+        "title": "Horizon"
+      },
+      "Indicator": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "symbol": {
+            "type": "string",
+            "title": "Symbol"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "caution": {
+            "type": "string",
+            "title": "Caution"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          },
+          "change_1d": {
+            "type": "number",
+            "title": "Change 1D"
+          },
+          "change_5d": {
+            "type": "number",
+            "title": "Change 5D"
+          },
+          "change_20d": {
+            "type": "number",
+            "title": "Change 20D"
+          },
+          "change_unit": {
+            "type": "string",
+            "title": "Change Unit"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/Point"
+            },
+            "type": "array",
+            "title": "Series"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "symbol",
+          "unit",
+          "market",
+          "explanation",
+          "caution",
+          "value",
+          "change_1d",
+          "change_5d",
+          "change_20d",
+          "change_unit",
+          "series"
+        ],
+        "title": "Indicator"
+      },
+      "Point": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "title": "Date"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "value"
+        ],
+        "title": "Point"
+      },
+      "Relationship": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "sector_id": {
+            "type": "string",
+            "title": "Sector Id"
+          },
+          "sector_name": {
+            "type": "string",
+            "title": "Sector Name"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          },
+          "driver_id": {
+            "type": "string",
+            "title": "Driver Id"
+          },
+          "driver_name": {
+            "type": "string",
+            "title": "Driver Name"
+          },
+          "direction": {
+            "type": "integer",
+            "title": "Direction"
+          },
+          "horizon": {
+            "type": "integer",
+            "title": "Horizon"
+          },
+          "threshold": {
+            "type": "number",
+            "title": "Threshold"
+          },
+          "study": {
+            "$ref": "#/components/schemas/Study"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "sector_id",
+          "sector_name",
+          "market",
+          "driver_id",
+          "driver_name",
+          "direction",
+          "horizon",
+          "threshold",
+          "study"
+        ],
+        "title": "Relationship"
+      },
+      "Sector": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "english_name": {
+            "type": "string",
+            "title": "English Name"
+          },
+          "market": {
+            "type": "string",
+            "title": "Market"
+          },
+          "driver_id": {
+            "type": "string",
+            "title": "Driver Id"
+          },
+          "direction": {
+            "type": "integer",
+            "title": "Direction"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "components": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Components"
+          },
+          "return_20d": {
+            "type": "number",
+            "title": "Return 20D"
+          },
+          "excess_20d": {
+            "type": "number",
+            "title": "Excess 20D"
+          },
+          "confidence": {
+            "type": "string",
+            "const": "low",
+            "title": "Confidence",
+            "default": "low"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "risk": {
+            "type": "string",
+            "title": "Risk"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/Point"
+            },
+            "type": "array",
+            "title": "Series"
+          },
+          "study": {
+            "$ref": "#/components/schemas/Study"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "english_name",
+          "market",
+          "driver_id",
+          "direction",
+          "score",
+          "components",
+          "return_20d",
+          "excess_20d",
+          "reason",
+          "risk",
+          "series",
+          "study"
+        ],
+        "title": "Sector"
+      },
+      "Study": {
+        "properties": {
+          "sample_count": {
+            "type": "integer",
+            "title": "Sample Count"
+          },
+          "average_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Return"
+          },
+          "median_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Return"
+          },
+          "average_excess": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Excess"
+          },
+          "win_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Win Rate"
+          },
+          "excess_win_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Excess Win Rate"
+          },
+          "worst_drawdown": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Worst Drawdown"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            },
+            "type": "array",
+            "title": "Events"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sample_count",
+          "average_return",
+          "median_return",
+          "average_excess",
+          "win_rate",
+          "excess_win_rate",
+          "worst_drawdown",
+          "events"
+        ],
+        "title": "Study"
+      },
+      "Term": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "definition": {
+            "type": "string",
+            "title": "Definition"
+          },
+          "example": {
+            "type": "string",
+            "title": "Example"
+          },
+          "caution": {
+            "type": "string",
+            "title": "Caution"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "category",
+          "definition",
+          "example",
+          "caution"
+        ],
+        "title": "Term"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

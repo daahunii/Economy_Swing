@@ -1,0 +1,8 @@
+{
+  "version": "sector-mvp-v1",
+  "status": "experimental-demo",
+  "weights": { "macro": 0.35, "historical": 0.4, "momentum": 0.25 },
+  "minimum_events": 3,
+  "normalization": "bounded-linear-demo-v1",
+  "note": "합성 데이터용 실험 설정. 실데이터 적용 및 모델 검증 전 사용 금지."
+}
