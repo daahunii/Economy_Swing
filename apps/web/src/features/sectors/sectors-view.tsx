@@ -41,7 +41,7 @@ export function SectorsView({
     )
     .sort((a, b) =>
       sort === "return"
-        ? b.excess_20d - a.excess_20d
+        ? (b.excess_20d ?? -Infinity) - (a.excess_20d ?? -Infinity)
         : (b.score ?? -1) - (a.score ?? -1),
     );
   const driver = data.indicators.find((i) => i.id === active?.driver_id);
@@ -69,29 +69,49 @@ export function SectorsView({
           <div className="sector-detail-grid">
             <div>
               <h3>점수의 구성</h3>
-              {[
-                ["macro", "거시 환경"],
-                ["historical", "과거 관계"],
-                ["momentum", "상대 모멘텀"],
-              ].map(([id, label]) => (
-                <div className="score-breakdown" key={id}>
-                  <span>
-                    {label}
-                    <small>{Math.round(data.weights[id] * 100)}%</small>
-                  </span>
-                  <div className="bar-track">
-                    <span style={{ width: `${active.components[id] || 0}%` }} />
-                  </div>
-                  <strong>
-                    {active.components[id] == null
-                      ? "—"
-                      : fmt(active.components[id], 1)}
-                  </strong>
+              {data.data_mode === "live" ? (
+                <div className="data-quality">
+                  <p>
+                    기회 점수는 실제 데이터 모델의 검증이 끝날 때까지
+                    보류합니다.
+                  </p>
+                  <p>{active.status_message}</p>
+                  <p>
+                    대용 지표: {active.proxy_name} ({active.proxy_symbol})
+                  </p>
+                  <p>벤치마크: {active.benchmark_name}</p>
+                  <p>최신 관측일: {active.observed_at || "미확보"}</p>
                 </div>
-              ))}
-              <small className="muted">
-                뉴스·밸류에이션 미적용 · {data.model_version}
-              </small>
+              ) : (
+                <>
+                  {" "}
+                  {[
+                    ["macro", "거시 환경"],
+                    ["historical", "과거 관계"],
+                    ["momentum", "상대 모멘텀"],
+                  ].map(([id, label]) => (
+                    <div className="score-breakdown" key={id}>
+                      <span>
+                        {label}
+                        <small>{Math.round(data.weights[id] * 100)}%</small>
+                      </span>
+                      <div className="bar-track">
+                        <span
+                          style={{ width: `${active.components[id] || 0}%` }}
+                        />
+                      </div>
+                      <strong>
+                        {active.components[id] == null
+                          ? "—"
+                          : fmt(active.components[id], 1)}
+                      </strong>
+                    </div>
+                  ))}
+                  <small className="muted">
+                    뉴스·밸류에이션 미적용 · {data.model_version}
+                  </small>
+                </>
+              )}
             </div>
             <div className="sector-thesis">
               <span className="eyebrow">
@@ -113,7 +133,7 @@ export function SectorsView({
       <section className="panel">
         <SectionHead
           title="섹터 비교"
-          sub={`${filtered.length}개 섹터 · 같은 모델의 실험 점수만 비교합니다`}
+          sub={`${filtered.length}개 섹터 · ${data.data_mode === "demo" ? "합성 모델 점수" : "실제 ETF 관측자료 · 기회 점수 검증 전"}`}
         />
         <div className="table-toolbar">
           <label className="inline-search">

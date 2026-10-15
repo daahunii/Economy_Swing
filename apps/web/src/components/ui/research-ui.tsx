@@ -5,9 +5,10 @@ export function Change({
   value,
   unit = "%",
 }: {
-  value: number;
+  value: number | null;
   unit?: string;
 }) {
+  if (value == null) return <span className="muted">—</span>;
   return (
     <span className={`change ${value >= 0 ? "positive" : "negative"}`}>
       {value >= 0 ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}{" "}

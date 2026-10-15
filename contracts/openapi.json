@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Economy Swing API",
-    "description": "Read-only synthetic research demo. No live data or investment recommendations.",
+    "description": "Official macro observations and optional read-only Toss market data. Demo is opt-in.",
     "version": "0.1.0"
   },
   "paths": {
@@ -313,9 +313,12 @@
         "properties": {
           "data_mode": {
             "type": "string",
-            "const": "demo",
+            "enum": [
+              "demo",
+              "live"
+            ],
             "title": "Data Mode",
-            "default": "demo"
+            "default": "live"
           },
           "as_of": {
             "type": "string",
@@ -378,6 +381,39 @@
             },
             "type": "array",
             "title": "Terms"
+          },
+          "observed_through": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Through"
+          },
+          "issues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Issues"
+          },
+          "live_indicator_count": {
+            "type": "integer",
+            "title": "Live Indicator Count",
+            "default": 0
+          },
+          "live_sector_count": {
+            "type": "integer",
+            "title": "Live Sector Count",
+            "default": 0
+          },
+          "toss_status": {
+            "type": "string",
+            "title": "Toss Status",
+            "default": "not-configured"
           }
         },
         "type": "object",
@@ -492,19 +528,47 @@
             "title": "Caution"
           },
           "value": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Value"
           },
           "change_1d": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Change 1D"
           },
           "change_5d": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Change 5D"
           },
           "change_20d": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Change 20D"
           },
           "change_unit": {
@@ -517,6 +581,88 @@
             },
             "type": "array",
             "title": "Series"
+          },
+          "source_name": {
+            "type": "string",
+            "title": "Source Name",
+            "default": "합성 fixture"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "source_series_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Series Id"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed At"
+          },
+          "source_updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Updated At"
+          },
+          "fetched_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetched At"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "fresh",
+              "stale",
+              "missing",
+              "invalid",
+              "demo"
+            ],
+            "title": "Status",
+            "default": "demo"
+          },
+          "status_message": {
+            "type": "string",
+            "title": "Status Message",
+            "default": "실제 시장 데이터가 아닙니다."
+          },
+          "frequency": {
+            "type": "string",
+            "title": "Frequency",
+            "default": "Daily"
           }
         },
         "type": "object",
@@ -595,6 +741,49 @@
           },
           "study": {
             "$ref": "#/components/schemas/Study"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "fresh",
+              "stale",
+              "missing",
+              "demo"
+            ],
+            "title": "Status",
+            "default": "demo"
+          },
+          "status_message": {
+            "type": "string",
+            "title": "Status Message",
+            "default": "합성 예시입니다."
+          },
+          "period_start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Start"
+          },
+          "period_end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period End"
+          },
+          "methodology": {
+            "type": "string",
+            "title": "Methodology",
+            "default": "5개 공통 관측치 상대 변화 ±0.5%, 다음 공통 관측치 종가 진입, 중첩 제외"
           }
         },
         "type": "object",
@@ -657,11 +846,25 @@
             "title": "Components"
           },
           "return_20d": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Return 20D"
           },
           "excess_20d": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Excess 20D"
           },
           "confidence": {
@@ -687,6 +890,82 @@
           },
           "study": {
             "$ref": "#/components/schemas/Study"
+          },
+          "source_name": {
+            "type": "string",
+            "title": "Source Name",
+            "default": "합성 fixture"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "proxy_symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proxy Symbol"
+          },
+          "proxy_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proxy Name"
+          },
+          "benchmark_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Benchmark Name"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed At"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "fresh",
+              "stale",
+              "missing",
+              "demo"
+            ],
+            "title": "Status",
+            "default": "demo"
+          },
+          "status_message": {
+            "type": "string",
+            "title": "Status Message",
+            "default": "합성 예시입니다."
           }
         },
         "type": "object",

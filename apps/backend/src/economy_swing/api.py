@@ -4,11 +4,11 @@ from typing import Literal
 from fastapi import FastAPI, Query, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-from .application import build_dashboard, relationship, TERMS
+from .application import build_dashboard, relationship, TERMS, data_mode
 from .schemas import ApiError, Dashboard, Horizon, Indicator, Relationship, Sector, Term
 
 logger=logging.getLogger(__name__)
-app=FastAPI(title="Economy Swing API",version="0.1.0",description="Read-only synthetic research demo. No live data or investment recommendations.")
+app=FastAPI(title="Economy Swing API",version="0.1.0",description="Official macro observations and optional read-only Toss market data. Demo is opt-in.")
 
 @app.middleware("http")
 async def request_id(request: Request, call_next):
@@ -27,12 +27,12 @@ def not_found(request):
 
 @app.get("/health/live")
 def live():
-    return {"status":"ok","data_mode":"demo"}
+    return {"status":"ok","data_mode":data_mode()}
 
 @app.get("/health/ready")
 def ready():
     build_dashboard()
-    return {"status":"ready","data_mode":"demo","database":"not-configured"}
+    return {"status":"ready","data_mode":data_mode(),"database":"not-configured"}
 
 @app.get("/api/v1/dashboard",response_model=Dashboard)
 def dashboard():

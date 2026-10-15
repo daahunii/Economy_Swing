@@ -6,7 +6,7 @@ import { LearnView } from "@/features/learn/learn-view";
 import { MacroView } from "@/features/macro/macro-view";
 import { SectorsView } from "@/features/sectors/sectors-view";
 import { api, type Dashboard } from "@/lib/api/client";
-import { country, path } from "@/lib/format";
+import { country, path, localTime } from "@/lib/format";
 import {
   Activity,
   ArrowUpRight,
@@ -103,7 +103,7 @@ export function ResearchApp({ section }: { section: string }) {
       .GET("/api/v1/dashboard", {
         signal: AbortSignal.any([
           controller.signal,
-          AbortSignal.timeout(15000),
+          AbortSignal.timeout(60000),
         ]),
       })
       .then(({ data, error, response }) => {
@@ -113,9 +113,7 @@ export function ResearchApp({ section }: { section: string }) {
       })
       .catch((e) => {
         if (e.name !== "AbortError")
-          setError(
-            "분석 API에 연결하지 못했습니다. FastAPI 실행 상태와 BACKEND_URL을 확인해 주세요.",
-          );
+          setError("자료를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
       });
     return () => controller.abort();
   }, [reload]);
@@ -160,6 +158,7 @@ export function ResearchApp({ section }: { section: string }) {
           .slice(0, 7)
       : [];
   const [eyebrow, title, description] = TITLES[section];
+  const isDemo = data?.data_mode === "demo";
   return (
     <div className="app-shell">
       <a href="#main-content" className="skip-link">
@@ -309,16 +308,32 @@ export function ResearchApp({ section }: { section: string }) {
             <div className="heading-meta">
               <span className="demo-badge">
                 <span />
-                DEMO DATA
+                {!data
+                  ? "CONNECTING"
+                  : isDemo
+                    ? "DEMO DATA"
+                    : "REAL OBSERVATIONS"}
               </span>
-              <small>예시 기준일 · 2026.10.14</small>
+              <small>
+                {!data
+                  ? "공급자 연결 확인 중"
+                  : isDemo
+                    ? `예시 기준일 · ${data.as_of.slice(0, 10)}`
+                    : `최신 관측일 · ${data.observed_through || "미확보"}`}
+              </small>
             </div>
           </div>
-          <div className="demo-banner">
+          <div className={`demo-banner ${isDemo ? "" : "live-banner"}`}>
             <Info size={16} />
             <p>
-              <strong>지금은 개발 미리보기입니다.</strong> 모든 수치와 순위는
-              합성 예시이며 실제 시장 상황을 나타내지 않습니다.
+              <strong>
+                {isDemo
+                  ? "합성 예시 모드입니다."
+                  : "공식 자료의 실제 관측값을 연결합니다."}
+              </strong>
+              {isDemo
+                ? " 모든 수치와 순위는 합성 예시이며 실제 시장 상황을 나타내지 않습니다."
+                : " 실시간 시세가 아니며 지표마다 기준일이 다릅니다. 확보하지 못한 값은 표시하지 않습니다."}
             </p>
             <button onClick={() => sourceDialog.current?.showModal()}>
               데이터 안내 <ArrowUpRight size={14} />
@@ -364,7 +379,9 @@ export function ResearchApp({ section }: { section: string }) {
                   </div>
                   <span className="data-caption">
                     <span />
-                    합성 데이터 · 신뢰도 낮음{" "}
+                    {isDemo
+                      ? "합성 데이터 · 신뢰도 낮음"
+                      : `실제 지표 ${data.live_indicator_count ?? 0}개 · 섹터 ${data.live_sector_count ?? 0}개 연결`}{" "}
                     <button
                       aria-label="신뢰도 설명"
                       onClick={() => sourceDialog.current?.showModal()}
@@ -400,6 +417,14 @@ export function ResearchApp({ section }: { section: string }) {
                 />
               )}
               {section === "learn" && <LearnView data={data} />}
+              {!isDemo && !!data.issues?.length && (
+                <details className="data-issues">
+                  <summary>지연·연결 대기 항목 {data.issues.length}개</summary>
+                  {data.issues.map((issue) => (
+                    <p key={issue}>{issue}</p>
+                  ))}
+                </details>
+              )}
             </>
           )}
           <footer className="content-footer">
@@ -427,16 +452,39 @@ export function ResearchApp({ section }: { section: string }) {
           </button>
         </div>
         <div className="dialog-content">
-          <Pill>합성 예시 · 실제 데이터 미연동</Pill>
+          <Pill>
+            {isDemo
+              ? "합성 예시 · 실제 데이터 미연동"
+              : "실제 공개 관측자료 · 시세 연결 상태"}
+          </Pill>
           <p>
-            화면의 모든 관측값은 고정된 수식으로 만든 fixture입니다. 이를
-            Python이 계산한 결과를 표시합니다.
+            {isDemo
+              ? "화면의 관측값은 고정된 수식으로 만든 fixture이며 Python으로 계산한 결과입니다."
+              : "금리·환율은 연방준비제도, 원자재는 EIA, VIX는 Cboe 자료를 FRED에서 수집합니다. 토스증권이 설정되면 실제 지수와 ETF 일봉을 조회합니다."}
           </p>
+          {!isDemo && (
+            <>
+              <p>
+                관측일: {data?.observed_through || "미확보"}
+                <br />
+                조회 스냅샷: {localTime(data?.generated_at)}
+                <br />
+                토스증권:{" "}
+                {data?.toss_status === "configured"
+                  ? "인증 토큰 설정됨 · 자료별 수집 상태 확인"
+                  : "백엔드 인증 설정 필요"}
+              </p>
+              <p>
+                연결된 실제 지표 {data?.live_indicator_count ?? 0}개 / 섹터{" "}
+                {data?.live_sector_count ?? 0}개
+              </p>
+            </>
+          )}
           <h3>계산 모델</h3>
           <p>
-            거시 35% + 과거 관계 40% + 모멘텀 25%. 점수와 정규화는 시연용이며
-            예측력 검증을 거치지 않았습니다. 유효 사건 3개 미만은 점수를
-            보류합니다.
+            {isDemo
+              ? "거시 35% + 과거 관계 40% + 모멘텀 25%. 합성 자료용 실험 설정이며 유효 사건 3개 미만은 점수를 보류합니다."
+              : "실제 관측자료의 기회 점수는 검증 전까지 보류합니다. 데모의 가중치와 정규화를 실제 시장의 신뢰할 수 있는 순위로 제시하지 않습니다."}
           </p>
           <h3>확인해야 할 한계</h3>
           <ul>

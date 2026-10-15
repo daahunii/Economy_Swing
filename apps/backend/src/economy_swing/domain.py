@@ -25,7 +25,7 @@ def weighted_score(components: dict[str, float], weights: dict[str, float]) -> f
 def bounded(value: float) -> float:
     return round(max(0.0, min(100.0, value)), 1)
 
-def event_study(driver, target, benchmark, direction: int, horizon: int, threshold: float = .5):
+def event_study(driver, target, benchmark, direction: int, horizon: int, threshold: float = .5, *, path_series=None):
     """5-observation driver return crosses threshold; next-close entry.
 
     Independent non-overlapping windows, no incomplete windows, aligned dates only.
@@ -48,7 +48,7 @@ def event_study(driver, target, benchmark, direction: int, horizon: int, thresho
             continue
         ret=percent_return(target[entry]["value"],target[end]["value"])
         base=percent_return(benchmark[entry]["value"],benchmark[end]["value"])
-        path=[p["value"] for p in target[entry:end+1]]
+        path=[p["value"] for p in (path_series or target) if target[entry]["date"] <= p["date"] <= target[end]["date"]]
         events.append(dict(date=driver[i]["date"],entry_date=target[entry]["date"],exit_date=target[end]["date"],return_pct=round(ret,3),benchmark_return_pct=round(base,3),excess_return_pp=round(ret-base,3),max_drawdown_pct=round(maximum_drawdown(path),3)))
         next_allowed=end+1
     if not events:

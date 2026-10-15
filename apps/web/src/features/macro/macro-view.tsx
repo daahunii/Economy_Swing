@@ -1,5 +1,6 @@
 "use client";
 import { MarketChart } from "@/components/charts/market-chart";
+import { IndicatorSource } from "@/components/ui/data-status";
 import { Change, Pill, SectionHead } from "@/components/ui/research-ui";
 import { type Dashboard } from "@/lib/api/client";
 import { country, fmt } from "@/lib/format";
@@ -35,10 +36,26 @@ export function MacroView({
   }
   return (
     <div className="explorer-grid">
+      <div className="macro-mobile-picker">
+        <label>
+          확인할 경제 지표
+          <select
+            aria-label="모바일 경제 지표 선택"
+            value={item.id}
+            onChange={(e) => select(e.target.value)}
+          >
+            {items.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.name} · {i.symbol}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
       <section className="panel indicator-list">
         <SectionHead
           title="주요 경제 지표"
-          sub={`${items.length}개 지표 · 일별 합성 관측치`}
+          sub={`${items.length}개 지표 · ${data.data_mode === "demo" ? "합성 관측치" : "공식 일별 관측자료"}`}
         />
         {items.map((i) => (
           <button
@@ -52,7 +69,8 @@ export function MacroView({
             </span>
             <span>
               <strong>
-                {fmt(i.value, i.value > 100 ? 1 : 2)} <small>{i.unit}</small>
+                {fmt(i.value, (i.value ?? 0) > 100 ? 1 : 2)}{" "}
+                <small>{i.unit}</small>
               </strong>
               <Change value={i.change_1d} unit={i.change_unit} />
             </span>
@@ -68,7 +86,13 @@ export function MacroView({
               </Pill>
               <h2>{item.name}</h2>
             </div>
-            <span className="muted tiny">합성 예시</span>
+            <span className="muted tiny">
+              {item.status === "demo"
+                ? "합성 예시"
+                : item.observed_at
+                  ? `관측 ${item.observed_at}`
+                  : "자료 미확보"}
+            </span>
           </div>
           <div className="large-number">
             {fmt(item.value)}
@@ -76,17 +100,23 @@ export function MacroView({
           </div>
           <div className="change-grid">
             {[
-              ["1관측치", item.change_1d],
-              ["5관측치", item.change_5d],
-              ["20관측치", item.change_20d],
-            ].map(([label, value]) => (
+              { label: "1관측치", value: item.change_1d },
+              { label: "5관측치", value: item.change_5d },
+              { label: "20관측치", value: item.change_20d },
+            ].map(({ label, value }) => (
               <div key={label}>
                 <small>{label} 변화</small>
-                <Change value={Number(value)} unit={item.change_unit} />
+                <Change value={value} unit={item.change_unit} />
               </div>
             ))}
           </div>
-          <MarketChart points={item.series.slice(-120)} unit={item.unit} />
+          {item.series.length > 0 ? (
+            <MarketChart points={item.series.slice(-120)} unit={item.unit} />
+          ) : (
+            <div className="empty-state">
+              <p>{item.status_message}</p>
+            </div>
+          )}
         </section>
         <section className="panel explanation">
           <span className="eyebrow">
@@ -111,14 +141,11 @@ export function MacroView({
               ))}
             {!data.sectors.some((s) => s.driver_id === item.id) && (
               <span className="muted">
-                이 지표에 연결한 예시 섹터는 아직 없습니다.
+                이 지표에 연결한 섹터는 아직 없습니다.
               </span>
             )}
           </div>
-          <div className="source-line">
-            <Database size={13} />
-            출처: 합성 fixture · 관측일 2026.10.14 · 실제 기관 자료 아님
-          </div>
+          <IndicatorSource item={item} />
         </section>
       </div>
     </div>

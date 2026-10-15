@@ -5,6 +5,8 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+if (existsSync(path.join(root, ".env.local")))
+  process.loadEnvFile(path.join(root, ".env.local"));
 const python = path.join(root, "apps/backend/.venv/bin/python");
 const apiPort = Number(process.env.API_PORT || 8100);
 const webPort = Number(process.env.PORT || 3100);

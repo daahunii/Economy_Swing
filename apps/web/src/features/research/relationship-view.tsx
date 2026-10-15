@@ -1,5 +1,6 @@
 "use client";
 import { Change, Pill, SectionHead } from "@/components/ui/research-ui";
+import { ConnectionNotice } from "@/components/ui/data-status";
 import {
   api,
   type Dashboard,
@@ -44,7 +45,7 @@ export function RelationshipView({
         params: { path: { sector_id: effectiveId }, query: { horizon } },
         signal: AbortSignal.any([
           controller.signal,
-          AbortSignal.timeout(15000),
+          AbortSignal.timeout(60000),
         ]),
       })
       .then(({ data, error }) => {
@@ -126,7 +127,10 @@ export function RelationshipView({
         </div>
       ) : (
         result &&
-        study && (
+        study &&
+        (result.status === "missing" ? (
+          <ConnectionNotice message={result.status_message} />
+        ) : (
           <>
             <div className="relationship-condition">
               <span className="small-icon">
@@ -174,7 +178,11 @@ export function RelationshipView({
             <section className="panel">
               <SectionHead
                 title="이벤트별 결과"
-                sub={`${data.indicators[0].series[0].date} ~ ${data.as_of.slice(0, 10)} · 실제 휴장일 미반영 합성 평일 기준`}
+                sub={
+                  data.data_mode === "demo"
+                    ? `${data.indicators[0]?.series[0]?.date || "—"} ~ ${data.as_of.slice(0, 10)} · 합성 평일 기준`
+                    : `${result.period_start || "—"} ~ ${result.period_end || "—"} · 공통 관측일 · 최신 수정 자료 기반 탐색`
+                }
               />
               {study.events.length ? (
                 <div className="table-wrap">
@@ -224,9 +232,11 @@ export function RelationshipView({
                   : "METHODOLOGY & LIMITATIONS"}
               </h3>
               <p>
-                모든 사건은 합성 자료에서 추출했습니다. 금리 지표의 이벤트
-                조건은 금리차(bp)가 아니라 수준값의 상대 변화율(%)입니다. 실제
-                발표 이벤트를 검증한 결과가 아닙니다.
+                {data.data_mode === "demo"
+                  ? "모든 사건은 합성 자료에서 추출했습니다."
+                  : "실제 관측자료에서 공통 날짜만 맞춰 분석했습니다. 최신 수정 자료 기반이며 당시 발표 정보만으로 재현한 백테스트는 아닙니다."}{" "}
+                금리 지표의 이벤트 조건은 금리차(bp)가 아니라 수준값의 상대
+                변화율(%)입니다.
               </p>
               <div className="caution">
                 <Info size={16} />
@@ -255,7 +265,7 @@ export function RelationshipView({
               </div>
             </section>
           </>
-        )
+        ))
       )}
     </>
   );

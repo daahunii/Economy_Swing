@@ -51,14 +51,14 @@ export function MarketChart({
                 axisLine={false}
                 tickLine={false}
                 minTickGap={45}
-                tick={{ fontSize: 11, fill: "#8b938e" }}
+                tick={{ fontSize: 14, fill: "#617267" }}
                 dy={10}
               />
               <YAxis
                 domain={["auto", "auto"]}
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 11, fill: "#8b938e" }}
+                tick={{ fontSize: 14, fill: "#617267" }}
                 tickFormatter={(v) =>
                   Number(v).toLocaleString("ko-KR", {
                     maximumFractionDigits: 1,
@@ -70,7 +70,7 @@ export function MarketChart({
                 contentStyle={{
                   border: "1px solid #e1e7e3",
                   borderRadius: 12,
-                  fontSize: 12,
+                  fontSize: 14,
                 }}
                 labelFormatter={(v) => String(v)}
                 formatter={(v) => [

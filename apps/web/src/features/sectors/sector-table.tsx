@@ -46,7 +46,7 @@ export function SectorTable({
                   <span>
                     <strong>{s.name}</strong>
                     <small>
-                      {country(s.market)} · {s.english_name}
+                      {country(s.market)} · {s.proxy_symbol || s.english_name}
                     </small>
                   </span>
                 </Link>
@@ -63,8 +63,20 @@ export function SectorTable({
                 </td>
               )}
               <td>
-                <span className="sample-count">{s.study.sample_count}개</span>
-                <small className="table-confidence">신뢰도 낮음</small>
+                <span className="sample-count">
+                  {s.status === "missing"
+                    ? "연결 대기"
+                    : `${s.study.sample_count}개`}
+                </span>
+                <small className="table-confidence">
+                  {s.status === "demo"
+                    ? "합성 예시"
+                    : s.status === "missing"
+                      ? "자료 미확보"
+                      : s.status === "stale"
+                        ? "자료 지연"
+                        : "모델 검증 전"}
+                </small>
               </td>
               <td>
                 <Link

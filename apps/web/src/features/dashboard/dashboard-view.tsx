@@ -1,6 +1,7 @@
 "use client";
 import { MarketChart } from "@/components/charts/market-chart";
 import { Change, SectionHead } from "@/components/ui/research-ui";
+import { ConnectionNotice } from "@/components/ui/data-status";
 import { MetricCard } from "@/features/macro/metric-card";
 import { SectorTable } from "@/features/sectors/sector-table";
 import { type Dashboard, type Sector } from "@/lib/api/client";
@@ -30,12 +31,25 @@ export function DashboardView({
 }) {
   const [chartId, setChartId] = useState("sp500");
   const [period, setPeriod] = useState(60);
-  const chart = data.indicators.find(
+  const benchmarkCharts = data.indicators.filter(
     (i) =>
-      i.id ===
-      (market === "KR" ? "kospi" : market === "US" ? "sp500" : chartId),
-  )!;
-  const focus = sectors[0];
+      ["sp500", "kospi"].includes(i.id) &&
+      i.series.length > 0 &&
+      (market === "ALL" || i.market === market),
+  );
+  const charts = benchmarkCharts.length
+    ? benchmarkCharts
+    : data.indicators
+        .filter(
+          (i) =>
+            i.series.length > 0 &&
+            (market === "ALL" || i.market === market || i.market === "ALL"),
+        )
+        .slice(0, 5);
+  const chart = charts.find((i) => i.id === chartId) || charts[0];
+  const focus = sectors.find(
+    (s) => s.series.length > 0 && s.study.sample_count > 0,
+  );
   const focusDriver = data.indicators.find((i) => i.id === focus?.driver_id);
   return (
     <>
@@ -49,59 +63,69 @@ export function DashboardView({
       </div>
       <div className="dashboard-middle">
         <section className="panel chart-panel">
-          <SectionHead
-            title="시장 흐름"
-            sub="큰 흐름을 확인하는 두 시장의 벤치마크"
-          />
-          <div className="chart-controls">
-            <div className="chart-tabs">
-              {data.indicators
-                .filter(
-                  (i) =>
-                    ["sp500", "kospi"].includes(i.id) &&
-                    (market === "ALL" || i.market === market),
-                )
-                .map((i) => (
-                  <button
-                    key={i.id}
-                    onClick={() => setChartId(i.id)}
-                    className={chart.id === i.id ? "active" : ""}
-                  >
-                    <span />
-                    {i.symbol}
-                  </button>
-                ))}
-            </div>
-            <div className="period-tabs">
-              {[
-                [20, "1M"],
-                [60, "3M"],
-                [120, "6M"],
-                [260, "1Y"],
-              ].map(([n, label]) => (
-                <button
-                  key={n}
-                  className={period === n ? "active" : ""}
-                  onClick={() => setPeriod(Number(n))}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="chart-stat">
-            <strong>{fmt(chart.value)}</strong>
-            <Change value={chart.change_20d} />
-            <span>최근 20관측치</span>
-          </div>
-          <MarketChart points={chart.series.slice(-period)} unit={chart.unit} />
-          <div className="chart-foot">
-            <span>
-              <span className="legend-dot" />
-              {chart.symbol} · 합성 경로
-            </span>
-            <small>가격 지수 예시 / {chart.unit}</small>
-          </div>
+          {chart ? (
+            <>
+              <SectionHead
+                title={benchmarkCharts.length ? "시장 흐름" : "경제 지표 흐름"}
+                sub={
+                  benchmarkCharts.length
+                    ? "확정 일봉으로 확인하는 시장의 흐름"
+                    : "시세 연결 전에는 공식 경제지표의 실제 관측 흐름을 표시합니다"
+                }
+              />
+              <div className="chart-controls">
+                <div className="chart-tabs">
+                  {charts.map((i) => (
+                    <button
+                      key={i.id}
+                      onClick={() => setChartId(i.id)}
+                      className={chart.id === i.id ? "active" : ""}
+                    >
+                      <span />
+                      {i.symbol}
+                    </button>
+                  ))}
+                </div>
+                <div className="period-tabs">
+                  {[
+                    [20, "1M"],
+                    [60, "3M"],
+                    [120, "6M"],
+                    [260, "1Y"],
+                  ].map(([n, label]) => (
+                    <button
+                      key={n}
+                      className={period === n ? "active" : ""}
+                      onClick={() => setPeriod(Number(n))}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="chart-stat">
+                <strong>{fmt(chart.value)}</strong>
+                <Change value={chart.change_20d} unit={chart.change_unit} />
+                <span>최근 20관측치</span>
+              </div>
+              <MarketChart
+                points={chart.series.slice(-period)}
+                unit={chart.unit}
+              />
+              <div className="chart-foot">
+                <span>
+                  <span className="legend-dot" />
+                  {chart.symbol} ·{" "}
+                  {data.data_mode === "demo" ? "합성 경로" : chart.source_name}
+                </span>
+                <small>
+                  {chart.observed_at || "예시 관측값"} / {chart.unit}
+                </small>
+              </div>
+            </>
+          ) : (
+            <ConnectionNotice message="공식 경제지표의 수집을 완료하지 못했습니다. 데이터 안내에서 수집 상태를 확인해 주세요." />
+          )}
         </section>
         <section className="insight-panel">
           <span className="insight-kicker">
@@ -151,22 +175,45 @@ export function DashboardView({
               </Link>
             </>
           )}
+          {!focus && (
+            <p>
+              섹터의 실제 시세가 연결되면 경제 변수와 과거 반응을 함께 탐색할 수
+              있습니다.
+            </p>
+          )}
           <small className="insight-disclaimer">
-            AI 해석이 아닌 예시 탐색 흐름입니다.
+            {data.data_mode === "demo"
+              ? "AI 해석이 아닌 예시 탐색 흐름입니다."
+              : "실제 관측자료 기반 탐색 · 기회 점수 모델 검증 전"}
           </small>
         </section>
       </div>
       <div className="dashboard-bottom">
         <section className="panel">
           <SectionHead
-            title="섹터 리서치 우선순위"
-            sub="경제 환경 · 과거 관계 · 상대 모멘텀의 실험 점수"
+            title={
+              data.data_mode === "demo"
+                ? "섹터 리서치 우선순위"
+                : "섹터 관측 목록"
+            }
+            sub={
+              data.data_mode === "demo"
+                ? "경제 환경 · 과거 관계 · 상대 모멘텀의 실험 점수"
+                : "실제 시세와 대용 ETF를 확인합니다. 미연결 값은 표시하지 않습니다."
+            }
             href={`/sectors?market=${market}`}
           />
-          <SectorTable sectors={sectors.slice(0, 5)} compact />
+          {data.data_mode === "live" &&
+          !sectors.some((s) => s.series.length > 0) ? (
+            <ConnectionNotice />
+          ) : (
+            <SectorTable sectors={sectors.slice(0, 5)} compact />
+          )}
           <div className="panel-foot">
             <Info size={13} />
-            기회 점수는 상승 확률이 아닙니다. 합성 데이터 모델입니다.
+            {data.data_mode === "demo"
+              ? "기회 점수는 상승 확률이 아닙니다. 합성 데이터 모델입니다."
+              : "실제 데이터의 점수는 검증 전까지 보류합니다. 가격 변화와 모델 신뢰도는 다릅니다."}
           </div>
         </section>
         <section className="panel why-panel">
@@ -196,7 +243,7 @@ export function DashboardView({
               <p>
                 {beginner
                   ? "표본이 적거나 자료가 불완전하면, 높은 점수도 충분한 근거가 되지 않습니다."
-                  : "Data confidence: Low · Synthetic fixture"}
+                  : "Data confidence: Low · Model validation pending"}
               </p>
             </div>
           </div>

@@ -40,3 +40,10 @@ def test_no_events_have_null_statistics():
     assert r["sample_count"]==0
     assert r["average_return"] is None
     assert r["win_rate"] is None
+
+def test_drawdown_keeps_target_days_missing_from_macro_alignment():
+    driver=series([100]*5+[102]*12)
+    target=series([100]*17)
+    full_path=[*target,{"date":"day-07a","value":50}]
+    result=event_study(driver,target,target,1,3,1,path_series=full_path)
+    assert result["events"][0]["max_drawdown_pct"]==-50

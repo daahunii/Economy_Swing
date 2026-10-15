@@ -178,10 +178,10 @@ export interface components {
     Dashboard: {
       /**
        * Data Mode
-       * @default demo
-       * @constant
+       * @default live
+       * @enum {string}
        */
-      data_mode: "demo";
+      data_mode: "demo" | "live";
       /** As Of */
       as_of: string;
       /** Generated At */
@@ -206,6 +206,25 @@ export interface components {
       relationships: components["schemas"]["Relationship"][];
       /** Terms */
       terms: components["schemas"]["Term"][];
+      /** Observed Through */
+      observed_through?: string | null;
+      /** Issues */
+      issues?: string[];
+      /**
+       * Live Indicator Count
+       * @default 0
+       */
+      live_indicator_count: number;
+      /**
+       * Live Sector Count
+       * @default 0
+       */
+      live_sector_count: number;
+      /**
+       * Toss Status
+       * @default not-configured
+       */
+      toss_status: string;
     };
     /** Event */
     Event: {
@@ -251,17 +270,48 @@ export interface components {
       /** Caution */
       caution: string;
       /** Value */
-      value: number;
+      value: number | null;
       /** Change 1D */
-      change_1d: number;
+      change_1d: number | null;
       /** Change 5D */
-      change_5d: number;
+      change_5d: number | null;
       /** Change 20D */
-      change_20d: number;
+      change_20d: number | null;
       /** Change Unit */
       change_unit: string;
       /** Series */
       series: components["schemas"]["Point"][];
+      /**
+       * Source Name
+       * @default 합성 fixture
+       */
+      source_name: string;
+      /** Source Url */
+      source_url?: string | null;
+      /** Source Series Id */
+      source_series_id?: string | null;
+      /** Observed At */
+      observed_at?: string | null;
+      /** Source Updated At */
+      source_updated_at?: string | null;
+      /** Fetched At */
+      fetched_at?: string | null;
+      /**
+       * Status
+       * @default demo
+       * @enum {string}
+       */
+      status: "fresh" | "stale" | "missing" | "invalid" | "demo";
+      /**
+       * Status Message
+       * @default 실제 시장 데이터가 아닙니다.
+       */
+      status_message: string;
+      /**
+       * Frequency
+       * @default Daily
+       */
+      frequency: string;
     };
     /** Point */
     Point: {
@@ -291,6 +341,26 @@ export interface components {
       /** Threshold */
       threshold: number;
       study: components["schemas"]["Study"];
+      /**
+       * Status
+       * @default demo
+       * @enum {string}
+       */
+      status: "fresh" | "stale" | "missing" | "demo";
+      /**
+       * Status Message
+       * @default 합성 예시입니다.
+       */
+      status_message: string;
+      /** Period Start */
+      period_start?: string | null;
+      /** Period End */
+      period_end?: string | null;
+      /**
+       * Methodology
+       * @default 5개 공통 관측치 상대 변화 ±0.5%, 다음 공통 관측치 종가 진입, 중첩 제외
+       */
+      methodology: string;
     };
     /** Sector */
     Sector: {
@@ -313,9 +383,9 @@ export interface components {
         [key: string]: number;
       };
       /** Return 20D */
-      return_20d: number;
+      return_20d: number | null;
       /** Excess 20D */
-      excess_20d: number;
+      excess_20d: number | null;
       /**
        * Confidence
        * @default low
@@ -329,6 +399,32 @@ export interface components {
       /** Series */
       series: components["schemas"]["Point"][];
       study: components["schemas"]["Study"];
+      /**
+       * Source Name
+       * @default 합성 fixture
+       */
+      source_name: string;
+      /** Source Url */
+      source_url?: string | null;
+      /** Proxy Symbol */
+      proxy_symbol?: string | null;
+      /** Proxy Name */
+      proxy_name?: string | null;
+      /** Benchmark Name */
+      benchmark_name?: string | null;
+      /** Observed At */
+      observed_at?: string | null;
+      /**
+       * Status
+       * @default demo
+       * @enum {string}
+       */
+      status: "fresh" | "stale" | "missing" | "demo";
+      /**
+       * Status Message
+       * @default 합성 예시입니다.
+       */
+      status_message: string;
     };
     /** Study */
     Study: {
